@@ -12,64 +12,35 @@ namespace AchievementReports
     {
         static void Main(string[] args)
         {
-            string descripshon;                                                    //内容
-            string dayDuty;                                                        //日直
-            string date;
-            string InParticipant;                                                    //参加者
-            string time;
-            string meetingID;
+            /* TODO:以下を実装
+             * 実績登録
+             * 実績出力
+             * 実績削除
+             * 人出力
+             * 人登録
+             * 人削除
+             * 会登録
+             * 会表示
+             * 会削除
+             * */
 
+            IDbConnection conn = GetConnection();
 
-            Console.Write("内容：");                                               //内容入力
-            descripshon = Console.ReadLine();
+            conn.Open();
+            MeetingRepository meetingRepository = new MeetingRepository(conn);
+            MeetingInputSequence meetingInputSequence = new MeetingInputSequence(meetingRepository);
+            meetingInputSequence.Start();
+            conn.Close();
+
+            conn.Open();
+            meetingRepository = new MeetingRepository(conn);
+            OutputMeetingListSequence outputMeetingListSequence = new OutputMeetingListSequence(meetingRepository);
+            outputMeetingListSequence.Start();
+            conn.Close();
+
+            Console.Write("会ID：");
+            string meetingID = Console.ReadLine();
             Console.WriteLine("");
-
-            Console.Write("日直：");                                               //日直入力
-            dayDuty = Console.ReadLine();
-            Console.WriteLine("");
-
-            Console.Write("日付：");
-            date = Console.ReadLine();
-            Console.WriteLine("");
-
-            OleDbConnection conn = new OleDbConnection();
-            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = C:\川口\社内\勉強会\勉強会実績.mdb";
-
-            if (descripshon != "" || dayDuty != "")
-            {
-                Meeting meeting = new Meeting();
-                meeting.Date = (DateTime.Parse(date));
-                meeting.Description = (descripshon);
-                meeting.DayDuty = (int.Parse(dayDuty));
-
-                conn.Open();
-
-                MeetingRepository meetingRepository = new MeetingRepository(conn);
-                meetingRepository.Insert(meeting);
-
-                meetingID = meetingRepository.GetNotID(meeting).ToString();
-
-                conn.Close();
-            }
-            else
-            {
-                conn.Open();
-
-                MeetingRepository meetingRepository = new MeetingRepository(conn);
-                IEnumerable<Meeting> meeting = meetingRepository.GetAll();
-
-                foreach (Meeting m in meeting)
-                {
-
-                    Console.WriteLine(m.MeetingId + "-" + m.Date.ToString() + "-" + m.Description + "-" + m.DayDuty);
-                }
-
-                conn.Close();
-
-                Console.Write("会ID：");
-                meetingID = Console.ReadLine();
-                Console.WriteLine("");
-            }
 
             conn.Open();
 
@@ -84,11 +55,11 @@ namespace AchievementReports
             conn.Close();
 
             Console.Write("参加者(カンマ区切り)：");
-            InParticipant = Console.ReadLine();
+            string InParticipant = Console.ReadLine();
             Console.WriteLine("");
 
             Console.Write("実績時間(分)：");
-            time = Console.ReadLine();
+            string time = Console.ReadLine();
             Console.WriteLine("");
 
             Participant participant = new Participant(InParticipant);
@@ -99,7 +70,7 @@ namespace AchievementReports
             {
                 achivement = new Achievement();
                 achivement.PersonId = l;
-                achivement.Date = DateTime.Parse(date);
+                //achivement.Date = DateTime.Parse(date);
                 if (meetingID == "")
                 {
                     achivement.MeetingId = 0;
@@ -117,6 +88,13 @@ namespace AchievementReports
 
                 conn.Close();
             }
+        }
+
+        public static IDbConnection GetConnection()
+        {
+            IDbConnection conn = new OleDbConnection();
+            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = C:\川口\社内\勉強会\勉強会実績.mdb";
+            return conn;
         }
 
         //人IDの文字列をもらい、リストにして返す。

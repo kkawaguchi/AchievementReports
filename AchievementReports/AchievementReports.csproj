@@ -43,12 +43,22 @@
   <ItemGroup>
     <Compile Include="Achievement.cs" />
     <Compile Include="AchievementRepository.cs" />
+    <Compile Include="GetMeetingListCommand.cs" />
+    <Compile Include="ICommand.cs" />
+    <Compile Include="InputMeetingCommand.cs" />
+    <Compile Include="IOutput.cs" />
+    <Compile Include="ISequence.cs" />
     <Compile Include="Meeting.cs" />
+    <Compile Include="MeetingInput.cs" />
+    <Compile Include="MeetingInputSequence.cs" />
+    <Compile Include="MeetingListOutput.cs" />
     <Compile Include="MeetingRepository.cs" />
+    <Compile Include="OutputMeetingListSequence.cs" />
     <Compile Include="PeopleRepository.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegisterMeetingCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
