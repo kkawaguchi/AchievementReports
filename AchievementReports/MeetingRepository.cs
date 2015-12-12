@@ -16,10 +16,11 @@ namespace AchievementReports
 
         public void Insert(Meeting meeting)
         {
+            int newId = GetNextID();
+            meeting.meetingID = newId;
             String sql;
             sql = "";
-            sql = "INSERT INTO 会(日付,内容,司会者) VALUES(#" + meeting.date + "#,'" + meeting.descripshon + "'," + meeting.dayDuty + ");";
-
+            sql = "INSERT INTO 会(会ID,日付,内容,司会者) VALUES(" + newId + ",#" + meeting.date + "#,'" + meeting.descripshon + "'," + meeting.dayDuty + ");";
             IDbCommand command = this.conn.CreateCommand();
             command.CommandText = sql;
             command.ExecuteNonQuery();
@@ -46,27 +47,6 @@ namespace AchievementReports
             }
 
             return meeting;
-        }
-
-        public int GetNotID(Meeting m)
-        {
-            string sql;
-            int meetingID;
-            meetingID = 0;
-
-            sql = "";
-            sql = "SELECT 会ID FROM 会 WHERE 内容 = '" + m.descripshon + "' AND 司会者 = " + m.dayDuty + " AND 日付 = #" + m.date + "#;";
-
-            IDbCommand command = this.conn.CreateCommand();
-            command.CommandText = sql;
-            IDataReader reader = command.ExecuteReader();
-
-            if (reader.Read())
-            {
-                meetingID = (reader.GetInt32(0));
-            }
-
-            return meetingID;
         }
 
         public List<Meeting> GetAll()
@@ -110,5 +90,19 @@ namespace AchievementReports
 
             return meeting;
         }
+
+        private int GetNextID()
+        {
+            string sql = "select max(会ID) from 会 ;";
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            object tmp = command.ExecuteScalar();
+
+            int maxId = DBNull.Value == tmp ? 0 : (int)tmp;
+
+            return maxId + 1;
+ 
+        }
+
     }
 }

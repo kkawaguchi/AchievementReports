@@ -33,7 +33,7 @@ namespace AchievementReports
             Console.WriteLine("");
 
             OleDbConnection conn = new OleDbConnection();
-            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = 勉強会実績.mdb";
+            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = C:\川口\社内\勉強会\db.mdb";
 
             if (descripshon != "" || dayDuty != "")
             {
@@ -46,9 +46,8 @@ namespace AchievementReports
 
                 MeetingRepository meetingRepository = new MeetingRepository(conn);
                 meetingRepository.Insert(meeting);
-
-                meetingID = meetingRepository.GetNotID(meeting).ToString();
-
+                meetingID = meeting.meetingID.ToString();
+                
                 conn.Close();
             }
             else
@@ -100,14 +99,7 @@ namespace AchievementReports
                 achivement = new Achievement();
                 achivement.personID = l;
                 achivement.date = DateTime.Parse(date);
-                if (meetingID == "")
-                {
-                    achivement.meetingID = 0;
-                }
-                else
-                {
-                    achivement.meetingID = int.Parse(meetingID);
-                }
+                achivement.meetingID = int.Parse(meetingID);
                 achivement.time = int.Parse(time);
 
                 conn.Open();
