@@ -33,7 +33,7 @@ namespace AchievementReports
             Console.WriteLine("");
 
             OleDbConnection conn = new OleDbConnection();
-            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = C:\川口\社内\勉強会\勉強会実績.mdb";
+            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source = 勉強会実績.mdb";
 
             if (descripshon != "" || dayDuty != "")
             {
@@ -118,214 +118,179 @@ namespace AchievementReports
                 conn.Close();
             }
         }
+    }
 
-        class PeopleRepository
+    class MeetingRepository
+    {
+        private IDbConnection conn;
+        public MeetingRepository(IDbConnection conn)
         {
-            private IDbConnection conn;
+            this.conn = conn;
+        }
 
-            public PeopleRepository(IDbConnection conn)
+        public void Insert(Meeting meeting)
+        {
+            String sql;
+            sql = "";
+            sql = "INSERT INTO 会(日付,内容,司会者) VALUES(#" + meeting.date + "#,'" + meeting.descripshon + "'," + meeting.dayDuty + ");";
+
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+        public Meeting Get(int id)
+        {
+            string sql;
+
+            sql = "";
+            sql = "SELECT 日付,内容,日直 FROM 会 WHERE 会ID = " + id + ";";
+
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            IDataReader reader = command.ExecuteReader();
+            Meeting meeting = null;
+
+            if (reader.Read())
             {
-                this.conn = conn;
+                meeting = new Meeting();
+                meeting.date = (reader.GetDateTime(0));
+                meeting.descripshon = (reader.GetString(1));
+                meeting.dayDuty = (reader.GetInt32(2));
             }
 
-            public List<Person> GetAll()
+            return meeting;
+        }
+
+        public int GetNotID(Meeting m)
+        {
+            string sql;
+            int meetingID;
+            meetingID = 0;
+
+            sql = "";
+            sql = "SELECT 会ID FROM 会 WHERE 内容 = '" + m.descripshon + "' AND 司会者 = " + m.dayDuty + " AND 日付 = #" + m.date + "#;";
+
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            IDataReader reader = command.ExecuteReader();
+
+            if (reader.Read())
             {
-                string sql;
+                meetingID = (reader.GetInt32(0));
+            }
 
-                sql = "";
-                sql = "SELECT * FROM 人 ;";
+            return meetingID;
+        }
 
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                IDataReader reader = command.ExecuteReader();
-                List<Person> people = new List<Person>();
+        public List<Meeting> GetAll()
+        {
+            string sql;
 
-                while (reader.Read())
+            sql = "";
+            sql = "SELECT * FROM 会 ;";
+
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            IDataReader reader = command.ExecuteReader();
+            List<Meeting> meeting = new List<Meeting>();
+
+            while (reader.Read())
+            {
+                Meeting m = new Meeting();
+                m.meetingID = (reader.GetInt32(0));
+                m.date = (reader.GetDateTime(1));
+                if (reader["内容"] == DBNull.Value)
                 {
-                    Person person = new Person();
-                    person.personID = reader.GetInt32(0);
-                    person.name = reader.GetString(1);
-                    person.kana = reader.GetString(2);
-
-                    people.Add(person);
+                    m.descripshon = "";
+                }
+                else
+                {
+                    m.descripshon = (reader.GetString(2));
                 }
 
-                return people;
-            }
-        }
-
-        class MeetingRepository
-        {
-            private IDbConnection conn;
-            public MeetingRepository(IDbConnection conn)
-            {
-                this.conn = conn;
-            }
-
-            public void Insert(Meeting meeting)
-            {
-                String sql;
-                sql = "";
-                sql = "INSERT INTO 会(日付,内容,司会者) VALUES(#" + meeting.date + "#,'" + meeting.descripshon + "'," + meeting.dayDuty + ");";
-
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                command.ExecuteNonQuery();
-            }
-
-            public Meeting Get(int id)
-            {
-                string sql;
-
-                sql = "";
-                sql = "SELECT 日付,内容,日直 FROM 会 WHERE 会ID = " + id + ";";
-
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                IDataReader reader = command.ExecuteReader();
-                Meeting meeting = null;
-
-                if (reader.Read())
+                if (reader["司会者"] == DBNull.Value)
                 {
-                    meeting = new Meeting();
-                    meeting.date = (reader.GetDateTime(0));
-                    meeting.descripshon = (reader.GetString(1));
-                    meeting.dayDuty = (reader.GetInt32(2));
+                    m.dayDuty = 0;
+                }
+                else
+                {
+                    m.dayDuty = (reader.GetInt32(3));
                 }
 
-                return meeting;
+
+                meeting.Add(m);
             }
 
-            public int GetNotID(Meeting m)
-            {
-                string sql;
-                int meetingID;
-                meetingID = 0;
+            return meeting;
+        }
+    }
 
-                sql = "";
-                sql = "SELECT 会ID FROM 会 WHERE 内容 = '" + m.descripshon + "' AND 司会者 = " + m.dayDuty + " AND 日付 = #" + m.date + "#;";
-
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                IDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    meetingID = (reader.GetInt32(0));
-                }
-
-                return meetingID;
-            }
-
-            public List<Meeting> GetAll()
-            {
-                string sql;
-
-                sql = "";
-                sql = "SELECT * FROM 会 ;";
-
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                IDataReader reader = command.ExecuteReader();
-                List<Meeting> meeting = new List<Meeting>();
-
-                while (reader.Read())
-                {
-                    Meeting m = new Meeting();
-                    m.meetingID = (reader.GetInt32(0));
-                    m.date = (reader.GetDateTime(1));
-                    if (reader["内容"] == DBNull.Value)
-                    {
-                        m.descripshon = "";
-                    }
-                    else
-                    {
-                        m.descripshon = (reader.GetString(2));
-                    }
-
-                    if (reader["司会者"] == DBNull.Value)
-                    {
-                        m.dayDuty = 0;
-                    }
-                    else
-                    {
-                        m.dayDuty = (reader.GetInt32(3));
-                    }
-
-
-                    meeting.Add(m);
-                }
-
-                return meeting;
-            }
+    class AchievementRepository
+    {
+        private IDbConnection conn;
+        public AchievementRepository(IDbConnection conn)
+        {
+            this.conn = conn;
         }
 
-        class AchievementRepository
+        public void Insert(Achievement achievement)
         {
-            private IDbConnection conn;
-            public AchievementRepository(IDbConnection conn)
-            {
-                this.conn = conn;
-            }
+            String sql;
+            sql = "";
+            sql = "INSERT INTO 実績(日付,人ID,実績分,会ID) VALUES(#" + achievement.date + "#," + achievement.personID + "," + achievement.time + "," + achievement.meetingID + ");";
 
-            public void Insert(Achievement achievement)
-            {
-                String sql;
-                sql = "";
-                sql = "INSERT INTO 実績(日付,人ID,実績分,会ID) VALUES(#" + achievement.date + "#," + achievement.personID + "," + achievement.time + "," + achievement.meetingID + ");";
+            IDbCommand command = this.conn.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+    }
 
-                IDbCommand command = this.conn.CreateCommand();
-                command.CommandText = sql;
-                command.ExecuteNonQuery();
-            }
+    public class Person
+    {
+        public string name { get; set; }
+        public string kana { get; set; }
+        public int personID { get; set; }
+    }
+
+    class Meeting
+    {
+        public string descripshon { get; set; }
+        public int dayDuty { get; set; }
+        public DateTime date { get; set; }
+        public int meetingID { get; set; }
+    }
+
+    class Achievement
+    {
+        public int achievementID { get; set; }
+        public int personID { get; set; }
+        public int meetingID { get; set; }
+        public DateTime date { get; set; }
+        public int time { get; set; }
+    }
+
+    //人IDの文字列をもらい、リストにして返す。
+    class Participant
+    {
+        private string participant;
+
+        public Participant(string participant)
+        {
+            this.participant = participant;
         }
 
-        class Person
+        public List<int> CreateParticiantList()
         {
-            public string name { get; set; }
-            public string kana { get; set; }
-            public int personID { get; set; }
-        }
+            string[] p = this.participant.Split(',');
+            List<int> particiantList = new List<int>();
 
-        class Meeting
-        {
-            public string descripshon { get; set; }
-            public int dayDuty { get; set; }
-            public DateTime date { get; set; }
-            public int meetingID { get; set; }
-        }
-
-        class Achievement
-        {
-            public int achievementID { get; set; }
-            public int personID { get; set; }
-            public int meetingID { get; set; }
-            public DateTime date { get; set; }
-            public int time { get; set; }
-        }
-
-        //人IDの文字列をもらい、リストにして返す。
-        class Participant
-        {
-            private string participant;
-
-            public Participant(string participant)
+            foreach (string personID in p)
             {
-                this.participant = participant;
+                particiantList.Add(int.Parse(personID));
             }
 
-            public List<int> CreateParticiantList()
-            {
-                string[] p = this.participant.Split(',');
-                List<int> particiantList = new List<int>();
-
-                foreach (string personID in p)
-                {
-                    particiantList.Add(int.Parse(personID));
-                }
-
-                return particiantList;
-            }
+            return particiantList;
         }
     }
 }
