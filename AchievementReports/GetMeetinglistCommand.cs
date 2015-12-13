@@ -6,24 +6,17 @@ using System.Threading.Tasks;
 
 namespace AchievementReports
 {
-    class GetMeetingListCommand : ICommand
+    class GetMeetingListCommand : ResultCommand<IEnumerable<Meeting>>
     {
         MeetingRepository _repo;
-        IEnumerable<Meeting> _meeting;
         public GetMeetingListCommand(MeetingRepository repo)
         {
             _repo = repo;
         }
 
-        public void Execute()
+        public override void Execute()
         {
-            _meeting = _repo.GetAll();
+            result = _repo.GetAll();
         }
-
-        public IEnumerable<Meeting> GetResult()
-        {
-            return _meeting;
-        }
-
     }
 }
